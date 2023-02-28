@@ -69,6 +69,9 @@ func WriteFile(dst string, text []string, v io.Writer) error {
 func readFile(src string) ([]string, error) {
 	var fileLines []string
 	readFile, err := os.Open(src)
+	if err != nil {
+		return fileLines, err
+	}
 	defer readFile.Close()
 
 	if err != nil {
@@ -94,10 +97,19 @@ func writeFile(dest string, text string) error {
 	defer file.Close()
 
 	_, err = file.WriteString(text)
-	file.Sync()
-	file.Close()
+	if err != nil {
+		return err
+	}
+	err = file.Sync()
+	if err != nil {
+		return err
+	}
+	err = file.Close()
+	if err != nil {
+		return err
+	}
 
-	return err
+	return nil
 }
 
 func replaceText(s string, repalcements map[string]string) string {

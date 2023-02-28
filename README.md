@@ -191,7 +191,8 @@ parameter: {
 ### GitUpdate    
 Clones or pulls a git repository via ssh from given url.
 
-It uses a ssh private keyfile for auth (e.g. a deployment key).
+
+It uses a no auth (with https url) or a ssh private keyfile (use ssh url type!) for auth (e.g. a deployment key).
 
 The option ```"errorOnNoUpdate": true``` will stop execution if ```"ignoreError"``` is set to ```false```.
 

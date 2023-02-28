@@ -13,14 +13,14 @@ type StepTypes string
 
 const (
 	CreateFolderType StepTypes = "mkdir"
-	CopyType                   = "cp"
-	DeleteType                 = "rm"
-	ReplaceTextType            = "replaceText"
-	FileWriterType             = "fileWriter"
-	ExecType                   = "exec"
-	EcecEachFileType           = "execEachFile"
-	GitUpdateType              = "gitUpdate"
-	SubStepsType               = "subSteps"
+	CopyType         StepTypes = "cp"
+	DeleteType       StepTypes = "rm"
+	ReplaceTextType  StepTypes = "replaceText"
+	FileWriterType   StepTypes = "fileWriter"
+	ExecType         StepTypes = "exec"
+	EcecEachFileType StepTypes = "execEachFile"
+	GitUpdateType    StepTypes = "gitUpdate"
+	SubStepsType     StepTypes = "subSteps"
 )
 
 type DeployerStep struct {
@@ -123,7 +123,7 @@ func (c *JsonConfig) Exceute(out io.Writer, verboseFlag bool) error {
 				write = nil
 			}
 
-			fmt.Fprintf(out, formatStep(s.Description, s.Type, (err != nil), 80))
+			fmt.Fprint(out, formatStep(s.Description, s.Type, (err != nil), 80))
 			err = ex.Exec(write)
 			if err != nil && !s.IgnoreError {
 				fmt.Fprintf(out, "%v\n", err.Error())
@@ -131,7 +131,10 @@ func (c *JsonConfig) Exceute(out io.Writer, verboseFlag bool) error {
 			}
 
 			if verboseFlag {
-				out.Write([]byte(v.String()))
+				_, err = out.Write(v.Bytes())
+				if err != nil {
+					panic(err.Error())
+				}
 			}
 		}
 

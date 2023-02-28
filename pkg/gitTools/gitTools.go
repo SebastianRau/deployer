@@ -39,47 +39,64 @@ func UpdateKeyFilename(url string, directory string, privateKeyFile string, pass
 
 }
 
+func UpdateNoKeyurl(url string, directory string, v io.Writer) (string, bool, error) {
+	return updateGitRepo(url, directory, nil, v)
+}
+
 func updateGitRepo(url string, directory string, publicKeys *ssh.PublicKeys, v io.Writer) (string, bool, error) {
-	{
-		// open git repo
-		verbose.Fprintf(v, "open git repo %s\n", directory)
-		r, err := git.PlainOpen(directory)
+
+	gitCloneOptions := &git.CloneOptions{
+		URL:      url,
+		Progress: v,
+	}
+
+	gitPullOptions := &git.PullOptions{
+		RemoteName: "origin",
+		Progress:   os.Stdout,
+	}
+
+	if publicKeys != nil {
+		gitCloneOptions.Auth = publicKeys
+		gitPullOptions.Auth = publicKeys
+	}
+
+	// open git repo
+	verbose.Fprintf(v, "open git repo %s\n", directory)
+	r, err := git.PlainOpen(directory)
+	if err != nil {
+
+		verbose.Fprintf(v, "can't open repo %s\n", directory)
+
+		// Clone the given repository to the given directory
+		verbose.Fprintf(v, "git clone %s into %s\n ", url, directory)
+		r, err = git.PlainClone(directory, false, gitCloneOptions)
 		if err != nil {
-			verbose.Fprintf(v, "can't open repo %s\n", directory)
-
-			// Clone the given repository to the given directory
-			verbose.Fprintf(v, "git clone %s into %s\n ", url, directory)
-
-			r, err = git.PlainClone(directory, false, &git.CloneOptions{
-				Auth:     publicKeys,
-				URL:      url,
-				Progress: v,
-			})
-			ref, _ := r.Head()
-
-			// repo was new cloned, no pull needed. in call cases it's a new hash
-			return ref.Hash().String(), true, nil
+			return "", false, err
 		}
 
-		// Pull the latest changes from the origin remote and merge into the current branch
-		verbose.Fprintf(v, "git pull origin\n")
-		w, err := r.Worktree()
-
-		err = w.Pull(&git.PullOptions{
-			RemoteName: "origin",
-			Auth:       publicKeys,
-			Progress:   os.Stdout,
-		})
 		ref, _ := r.Head()
-		if err != nil {
-			if err.Error() == "already up-to-date" {
-				verbose.Fprintf(v, "%s\n", err.Error())
-				return ref.Hash().String(), false, nil
-			} else {
-				return "", false, nil
-			}
-		}
 
+		// repo was new cloned, no pull needed. in call cases it's a new hash
 		return ref.Hash().String(), true, nil
 	}
+
+	// Pull the latest changes from the origin remote and merge into the current branch
+	verbose.Fprintf(v, "git pull origin\n")
+	w, err := r.Worktree()
+	if err != nil {
+		return "", false, err
+	}
+
+	err = w.Pull(gitPullOptions)
+	ref, _ := r.Head()
+	if err != nil {
+		if err.Error() == "already up-to-date" {
+			verbose.Fprintf(v, "%s\n", err.Error())
+			return ref.Hash().String(), false, nil
+		} else {
+			return "", false, nil
+		}
+	}
+
+	return ref.Hash().String(), true, nil
 }

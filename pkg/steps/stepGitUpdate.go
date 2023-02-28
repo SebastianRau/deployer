@@ -24,15 +24,30 @@ func UnmarschalGitUpdate(step DeployerStep) (*GitUpdate, error) {
 }
 
 func (s *GitUpdate) Exec(v io.Writer) error {
-	_, new, err := gittools.UpdateKeyFilename(
-		s.Url, s.Directory,
-		s.PrivateKeyFile,
-		s.Password,
-		v,
-	)
 
-	if err != nil {
-		return err
+	var new bool
+	var err error
+
+	if s.PrivateKeyFile != "" {
+		_, new, err = gittools.UpdateKeyFilename(
+			s.Url, s.Directory,
+			s.PrivateKeyFile,
+			s.Password,
+			v,
+		)
+		if err != nil {
+			return err
+		}
+
+	} else {
+		_, new, err = gittools.UpdateNoKeyurl(
+			s.Url,
+			s.Directory,
+			v,
+		)
+		if err != nil {
+			return err
+		}
 	}
 
 	if !new && s.ErrOnNoUpdate {

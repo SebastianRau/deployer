@@ -49,7 +49,10 @@ func main() {
 	fmt.Printf("Deployer v%s\n", version)
 
 	start := time.Now()
-	st.Exceute(os.Stdout, *verbose)
+	err = st.Exceute(os.Stdout, *verbose)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	stop := time.Now()
 	elapsed := stop.Sub(start)
 

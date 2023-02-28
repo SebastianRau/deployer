@@ -3,7 +3,8 @@ package templating
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
+
 	"os"
 	"text/template"
 )
@@ -25,7 +26,7 @@ func ParseTemplateJsonData(templ string, data string) (string, error) {
 			return "", err
 		}
 
-		dataBytes, _ := ioutil.ReadAll(jsonFile)
+		dataBytes, _ := io.ReadAll(jsonFile)
 		if err := json.Unmarshal(dataBytes, &m); err != nil {
 			return "", err
 		}
@@ -37,7 +38,7 @@ func ParseTemplateJsonData(templ string, data string) (string, error) {
 	}
 
 	templateFile, _ := os.Open(templ)
-	templateBytes, _ := ioutil.ReadAll(templateFile)
+	templateBytes, _ := io.ReadAll(templateFile)
 
 	funcMap := template.FuncMap{
 		"add":     add,

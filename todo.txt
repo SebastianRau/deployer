@@ -1,10 +1,13 @@
-(x)	"CreateFolder"
-(!)	"Copy"			// TODO improve speed
-(x)	"Delete"
-(x)	"ReplaceText"
-(x) "FileWriter"
-(o)	"Exec"
-(o)	"ExecEach"
-(x)	"GitUpdate"
-(o)	"SubList"
+(x)	CreateFolder
+(!)	Copy
+(x)	Delete
+(x)	ReplaceText
+(x) FileWriter
+(o)	Exec
+(o)	ExecEach
+(x)	GitUpdate
+(o)	SubList
+( ) SymLinks
+( ) wget
+( ) write log files
 
